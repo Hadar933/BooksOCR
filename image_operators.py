@@ -144,4 +144,4 @@ class Composition(ImageOperator):
 		return image
 
 	def __str__(self):
-		return "-->".join([op.__str__() for op in self.op_list])
+		return "".join([op.__str__() for op in self.op_list])
