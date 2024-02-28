@@ -8,6 +8,7 @@ def save_ocr(
 		ocr_text: str,
 		base_dir: str | None = None
 ) -> None:
+	""" saves the ocr results to a txt file """
 	if not base_dir:
 		base_dir = os.path.join('resources', 'ocr')
 	ocr_path = os.path.join(
