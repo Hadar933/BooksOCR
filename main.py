@@ -39,14 +39,19 @@ if __name__ == '__main__':
 		image_operators=[
 			io.Identity(),
 			io.Composition([
-				io.GaussianBlur(),
-				io.Sobel()
+				io.Resize(),
+				io.ConvertToGray(),
+				io.Dilate(),
+				io.Erode(),
+				io.BilateralFilterAndThreshold()
 			])
 		],
 		ocr_engine=ocr.Tesseract(language='heb'),
 		verbose=True,
 		save_ocr=True
 	)
-	print(ocrs['Identity']['ocr'])
-	print('=' * 50)
-	print(ocrs['GaussianBlurSobel']['ocr'])
+	for operator, results in ocrs.items():
+		print(operator)
+		print('=' * 50)
+		print(results['ocr'])
+		print('=' * 50)
