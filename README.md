@@ -1,8 +1,7 @@
 # BooksOCR
 
 #### tessaract OCR for windows: 
-
-[version 5.3.3 (64bit) .exe file](tesseract-ocr-w64-setup-5.3.3.20231005.exe)
+download latest version of tessaract OCR from [UB-Mannheim](https://github.com/UB-Mannheim/tesseract/wiki)
 #### tessaract OCR for linux:
 ```bash
 sudo apt-get install tesseract-ocr
