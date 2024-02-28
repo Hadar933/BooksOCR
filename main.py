@@ -1,6 +1,6 @@
 import os
 import image_operators as io
-
+import utils
 import pytesseract
 
 pytesseract.pytesseract.tesseract_cmd = 'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
@@ -24,26 +24,27 @@ def main(
 	for i, op_instance in enumerate(op_list):
 		print(f'[{i + 1}/{len(op_list)}] {op_instance.__str__()}')
 		op_result = op_instance(image_path)
-		if verbose: op_instance.plot(image_path, op_result)
 		op_ocr = pytesseract.image_to_string(op_result, lang='heb')
-		if save_ocr:
-			ocr_path = os.path.join(os.getcwd(), f'ocr_{op_instance.__str__()}.txt')
-			with open(ocr_path, 'w', encoding='utf-8') as file:
-				file.write(op_ocr)
 		all_results[str(op_instance)] = {'image': op_result, 'ocr': op_ocr}
+		if verbose:
+			op_instance.plot(image_path, op_result)
+		if save_ocr:
+			utils.save_ocr(op_instance, op_ocr)
 	return all_results
 
 
 if __name__ == '__main__':
 	ocrs = main(
-		image_path='books.jpg',
+		image_path='resources/images/books.jpg',
 		op_list=[
 			io.Identity(),
 			io.Composition([
 				io.GaussianBlur(),
 				io.Sobel()
 			])
-		]
+		],
+		verbose=True,
+		save_ocr=True
 	)
 	print(ocrs['Identity']['ocr'])
 	print('=' * 50)
