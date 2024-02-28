@@ -9,11 +9,11 @@ class ImageOperator(ABC):
 	Abstract class for image operators
 	"""
 
-	def __str__(self):
+	def __str__(self) -> str:
 		return self.__class__.__name__
 
 	@abstractmethod
-	def __call__(self, image_input):
+	def __call__(self, image_input: str | np.ndarray) -> np.ndarray:
 		"""
 		Abstract method for applying the operator
 		:param image_input: either a path to an image or a numpy array.
@@ -22,14 +22,24 @@ class ImageOperator(ABC):
 		raise NotImplementedError
 
 	@staticmethod
-	def read_image(image_input):
+	def read_image(image_input: str | np.ndarray) -> np.ndarray:
 		if isinstance(image_input, str):
 			image_input = cv2.imread(image_input, cv2.IMREAD_COLOR)
 		return image_input
 
-	def plot(self, image_input, result=None):
+	def plot(
+			self,
+			image_input: str | np.ndarray,
+			result: np.ndarray | None = None
+	) -> None:
+		"""
+		Plot the original image and the result of the operator
+		:param image_input: either a path to an image or a numpy array.
+		:param result: the result of the operator. if not provided, the operator will be called.
+		:return:
+		"""
 		image = self.read_image(image_input)
-		if result is None:	result = self(image_input)
+		if result is None: result = self(image_input)
 		plt.figure(figsize=(10, 5))
 		plt.subplot(1, 2, 1)
 		plt.imshow(image, cmap='gray')
@@ -40,6 +50,7 @@ class ImageOperator(ABC):
 		plt.imshow(result, cmap='gray')
 		plt.title(str(self))
 		plt.axis('off')
+		plt.tight_layout()
 		plt.show()
 
 
@@ -82,12 +93,40 @@ class HistEqualize(ImageOperator):
 
 
 class Erode(ImageOperator):
+	def __init__(self, kernel_size=(3, 3), iterations=1):
+		"""
+		Erosion operator for noise reduction
+		:param kernel_size: tuple (width, height) of the kernel
+		:param iterations: number of iterations for the erosion
+		"""
+		self.kernel_size = kernel_size
+		self.iterations = iterations
+
 	def __call__(self, image_input):
 		""" Erosion operator for noise reduction """
 		image = self.read_image(image_input)
-		kernel = np.ones((3, 3), np.uint8)
-		erosion = cv2.erode(image, kernel, iterations=1)
+		kernel = np.ones(self.kernel_size, np.uint8)
+		erosion = cv2.erode(image, kernel, iterations=self.iterations)
 		return erosion
+
+
+class GaussianBlur(ImageOperator):
+	def __init__(self, kernel_size=(5, 5), sigma_x=0, sigma_y=0):
+		"""
+		Gaussian blur operator for noise reduction
+		:param kernel_size: tuple (width, height) of the kernel
+		:param sigma_x: standard deviation in x-direction
+		:param sigma_y: standard deviation in y-direction
+		"""
+		self.kernel_size = kernel_size
+		self.sigma_x = sigma_x
+		self.sigma_y = sigma_y
+
+	def __call__(self, image_input):
+		""" Gaussian blur operator """
+		image = self.read_image(image_input)
+		blurred = cv2.GaussianBlur(image, self.kernel_size, self.sigma_x, self.sigma_y)
+		return blurred
 
 
 class Composition(ImageOperator):
@@ -105,4 +144,4 @@ class Composition(ImageOperator):
 		return image
 
 	def __str__(self):
-		return "".join([op.__name__.capitalize() for op in self.op_list])
+		return "-->".join([op.__str__() for op in self.op_list])
