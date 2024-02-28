@@ -1,14 +1,13 @@
 import os
 import image_operators as io
 import utils
-import pytesseract
-
-pytesseract.pytesseract.tesseract_cmd = 'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
+import ocr
 
 
 def main(
 		image_path: str,
 		op_list: list[io.ImageOperator],
+		ocr_engine: ocr.OCREngine,
 		verbose: bool = False,
 		save_ocr: bool = False
 ) -> dict[str: dict]:
@@ -16,6 +15,7 @@ def main(
 	Apply a list of operators to an image and calculate the OCR results
 	:param image_path: path to the image
 	:param op_list: list of image operators to apply
+	:param ocr_engine: the OCR engine to use
 	:param verbose: plots the results of each operator
 	:param save_ocr: saves the OCR results to a txt file
 	:return: dictionary of all ocr and image operator results
@@ -24,7 +24,7 @@ def main(
 	for i, op_instance in enumerate(op_list):
 		print(f'[{i + 1}/{len(op_list)}] {op_instance.__str__()}')
 		op_result = op_instance(image_path)
-		op_ocr = pytesseract.image_to_string(op_result, lang='heb')
+		op_ocr = ocr_engine(op_result)
 		all_results[str(op_instance)] = {'image': op_result, 'ocr': op_ocr}
 		if verbose:
 			op_instance.plot(image_path, op_result)
@@ -43,9 +43,10 @@ if __name__ == '__main__':
 				io.Sobel()
 			])
 		],
+		ocr_engine=ocr.Tesseract(language='heb'),
 		verbose=True,
 		save_ocr=True
 	)
 	print(ocrs['Identity']['ocr'])
 	print('=' * 50)
-	print(ocrs['GaussianBlur-->Sobel']['ocr'])
+	print(ocrs['GaussianBlurSobel']['ocr'])
