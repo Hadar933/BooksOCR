@@ -6,7 +6,7 @@ import ocr
 
 def main(
 		image_path: str,
-		op_list: list[io.ImageOperator],
+		image_operators: list[io.ImageOperator],
 		ocr_engine: ocr.OCREngine,
 		verbose: bool = False,
 		save_ocr: bool = False
@@ -14,15 +14,15 @@ def main(
 	"""
 	Apply a list of operators to an image and calculate the OCR results
 	:param image_path: path to the image
-	:param op_list: list of image operators to apply
+	:param image_operators: list of image operators to apply
 	:param ocr_engine: the OCR engine to use
 	:param verbose: plots the results of each operator
 	:param save_ocr: saves the OCR results to a txt file
 	:return: dictionary of all ocr and image operator results
 	"""
 	all_results = dict()
-	for i, op_instance in enumerate(op_list):
-		print(f'[{i + 1}/{len(op_list)}] {op_instance.__str__()}')
+	for i, op_instance in enumerate(image_operators):
+		print(f'[{i + 1}/{len(image_operators)}] {op_instance.__str__()}')
 		op_result = op_instance(image_path)
 		op_ocr = ocr_engine(op_result)
 		all_results[str(op_instance)] = {'image': op_result, 'ocr': op_ocr}
@@ -36,7 +36,7 @@ def main(
 if __name__ == '__main__':
 	ocrs = main(
 		image_path='resources/images/books.jpg',
-		op_list=[
+		image_operators=[
 			io.Identity(),
 			io.Composition([
 				io.GaussianBlur(),
