@@ -93,7 +93,7 @@ class HistEqualize(ImageOperator):
 
 
 class Erode(ImageOperator):
-	def __init__(self, kernel_size=(3, 3), iterations=1):
+	def __init__(self, kernel_size=(1, 1), iterations=1):
 		"""
 		Erosion operator for noise reduction
 		:param kernel_size: tuple (width, height) of the kernel
@@ -108,6 +108,68 @@ class Erode(ImageOperator):
 		kernel = np.ones(self.kernel_size, np.uint8)
 		erosion = cv2.erode(image, kernel, iterations=self.iterations)
 		return erosion
+
+
+class Resize(ImageOperator):
+	def __init__(self, x_scale_factor: float = 1.2, y_scale_factor: float = 1.2, interpolation=cv2.INTER_CUBIC):
+		"""
+		Resize the image by specified scaling factors for x and y axes
+		:param x_scale_factor: The scaling factor for the x-axis
+		:param y_scale_factor: The scaling factor for the y-axis
+		:param interpolation: Interpolation method to use
+		"""
+		self.x_scale_factor = x_scale_factor
+		self.y_scale_factor = y_scale_factor
+		self.interpolation = interpolation
+
+	def __call__(self, image_input):
+		image = self.read_image(image_input)
+		resized_image = cv2.resize(image, None, fx=self.x_scale_factor, fy=self.y_scale_factor,
+								   interpolation=self.interpolation)
+		return resized_image
+
+
+class ConvertToGray(ImageOperator):
+	def __call__(self, image_input):
+		image = self.read_image(image_input)
+		gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+		return gray_image
+
+
+class BilateralFilterAndThreshold(ImageOperator):
+	def __init__(self, d: int = 5, sigma_color: int = 75, sigma_space: int = 75):
+		"""
+		Apply bilateral filter and thresholding
+		:param d: Diameter of each pixel neighborhood
+		:param sigma_color: Filter sigma in the color space
+		:param sigma_space: Filter sigma in the coordinate space
+		"""
+		self.d = d
+		self.sigma_color = sigma_color
+		self.sigma_space = sigma_space
+
+	def __call__(self, image_input):
+		image = self.read_image(image_input)
+		bilateral_filtered = cv2.bilateralFilter(image, self.d, self.sigma_color, self.sigma_space)
+		_, thresholded = cv2.threshold(bilateral_filtered, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+		return thresholded
+
+
+class Dilate(ImageOperator):
+	def __init__(self, kernel_size=(1, 1), iterations=1):
+		"""
+		:param kernel_size: tuple (width, height) of the kernel
+		:param iterations: number of iterations for the erosion
+		"""
+		self.kernel_size = kernel_size
+		self.iterations = iterations
+
+	def __call__(self, image_input):
+		""" Dilation operator for noise reduction """
+		image = self.read_image(image_input)
+		kernel = np.ones(self.kernel_size, np.uint8)
+		dilation = cv2.dilate(image, kernel, iterations=self.iterations)
+		return dilation
 
 
 class GaussianBlur(ImageOperator):
